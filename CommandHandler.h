@@ -1,7 +1,3 @@
-//
-// Created by Bradley on 3/20/2025.
-//
-
 #ifndef COMMANDHANDLER_H
 #define COMMANDHANDLER_H
 
@@ -14,6 +10,7 @@ class CommandHandler {
 private:
     void executeCommand(vector<string>& args, bool inBackground);
     void executePipe(vector<string>& firstCommand, vector<string>& secondCommand);
+    vector<string> parseCommand(const string& command);
 public:
     void execute(const string& command);
 };
