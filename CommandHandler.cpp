@@ -37,7 +37,7 @@ void CommandHandler::execute(const string& command) {
         if (inPipe) {
             executePipe(firstCommand, secondCommand);
         } else {
-            executeCommand(firstCommand, secondCommand);
+            executeCommand(firstCommand, inBackground);
         }
     }
 }

@@ -7,7 +7,7 @@ void Shell::printPrompt() {
     cout << "tiger> ";
 }
 
-void Shell::printPrompt() {
+void Shell::run() {
     string command;
     while (true) {
         printPrompt();
@@ -15,6 +15,6 @@ void Shell::printPrompt() {
         if ( command == "exit" )
             break;
         history.addCommand(command);
-        commandHandler.execute();
+        commandHandler.execute(command);
     }
 }
