@@ -28,7 +28,7 @@ string Shell::readCommand() {
     setRawMode(true);  // Activar modo sin buffer
     string command;
 
-    cout << "tiger> ";
+    printPrompt();
 
     while (true) {
         char ch = getchar();
@@ -40,14 +40,16 @@ string Shell::readCommand() {
                     string historyCommand = history.getCommand("up");
                     if (!historyCommand.empty()) {
                         command = historyCommand;
-                        cout << "\r\033[Ktiger> " << command;  // Borrar línea y mostrar historial
+                        printPrompt();
+                        cout << command;  // Borrar línea y mostrar historial
                     }
                 }
                 else if (ch == 'B') {  // Flecha Abajo
                     string historyCommand = history.getCommand("down");
                     if (!historyCommand.empty() || history.getOnShown() == history.getHistory().size()) {
                         command = historyCommand;
-                        cout << "\r\033[Ktiger> " << command;
+                        printPrompt();
+                        cout << command;
                     }
                 }
             }
