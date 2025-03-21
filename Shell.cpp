@@ -1,5 +1,7 @@
 #include "Shell.h"
 #include <iostream>
+#include <termios.h>
+#include <unistd.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
@@ -9,6 +11,66 @@
 #include <stdlib.h>
 
 using namespace std;
+
+void setRawMode(bool enable) {
+    struct termios t;
+    tcgetattr(STDIN_FILENO, &t);
+    if (enable) {
+        t.c_lflag &= ~(ICANON | ECHO);  // Modo sin buffer y sin eco
+    } else {
+        t.c_lflag |= (ICANON | ECHO);
+    }
+    tcsetattr(STDIN_FILENO, TCSANOW, &t);
+}
+
+// Función para capturar texto y flechas
+string Shell::readCommand() {
+    setRawMode(true);  // Activar modo sin buffer
+    string command;
+
+    cout << "tiger> ";
+
+    while (true) {
+        char ch = getchar();
+
+        if (ch == 27) {  // Tecla ESC (posible flecha)
+            if (getchar() == 91) {  // Verificar que es una secuencia ANSI
+                ch = getchar();
+                if (ch == 'A') {  // Flecha Arriba
+                    string historyCommand = history.getCommand("up");
+                    if (!historyCommand.empty()) {
+                        command = historyCommand;
+                        cout << "\r\033[Ktiger> " << command;  // Borrar línea y mostrar historial
+                    }
+                }
+                else if (ch == 'B') {  // Flecha Abajo
+                    string historyCommand = history.getCommand("down");
+                    if (!historyCommand.empty() || history.getOnShown() == history.getHistory().size()) {
+                        command = historyCommand;
+                        cout << "\r\033[Ktiger> " << command;
+                    }
+                }
+            }
+        }
+        else if (ch == 10) {  // ENTER
+            cout << endl;
+            break;
+        }
+        else if (ch == 127) {  // BACKSPACE
+            if (!command.empty()) {
+                command.pop_back();
+                cout << "\b \b";
+            }
+        }
+        else {
+            command += ch;
+            cout << ch;
+        }
+    }
+
+    setRawMode(false);
+    return command;
+}
 
 Shell::Shell()
 {
@@ -193,7 +255,6 @@ void Shell::printPrompt() {
          << "\033[1;36m" << currentDirectory << "\033[0m"
          << "$ ";
 }
-
 const unordered_map<string, string> &Shell::getEnvironment() const
 {
     return environment;
@@ -204,14 +265,10 @@ const string &Shell::getCurrentDirectory() const
     return currentDirectory;
 }
 
-void Shell::run()
-{
+void Shell::run() {
     string command;
-    while (true)
-    {
-        printPrompt();
-        getline(cin, command);
-
+    while (true) {
+        command = readCommand();
         if (command.empty())
         {
             continue;
