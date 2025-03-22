@@ -16,16 +16,56 @@ void setRawMode(bool enable) {
     struct termios t;
     tcgetattr(STDIN_FILENO, &t);
     if (enable) {
-        t.c_lflag &= ~(ICANON | ECHO);  // Modo sin buffer y sin eco
+        t.c_lflag &= ~(ICANON | ECHO);
     } else {
         t.c_lflag |= (ICANON | ECHO);
     }
     tcsetattr(STDIN_FILENO, TCSANOW, &t);
 }
 
-// Función para capturar texto y flechas
+bool isNumber(const string& str) {
+    for (char ch : str) {
+        if (!isdigit(ch)) return false;
+    }
+    return !str.empty();
+}
+
+int extractNumberAfterExclamation(const string& input) {
+    size_t pos = input.find("!");
+
+    if (pos == string::npos) {
+        throw runtime_error("Error: No hay '!' en la cadena.");
+    }
+
+    size_t start = pos + 1;
+    while (start < input.length() && isspace(input[start])) {
+        start++;
+    }
+
+    if (start >= input.length() || !isdigit(input[start])) {
+        throw runtime_error("Error: No hay un número válido después de '!'");
+    }
+
+    size_t end = start;
+    while (end < input.length() && isdigit(input[end])) {
+        end++;
+    }
+
+    size_t check = end;
+    while (check < input.length()) {
+        if (!isspace(input[check])) {
+            throw runtime_error("Error: Caracteres no válidos después del número.");
+        }
+        check++;
+    }
+
+    string numberStr = input.substr(start, end - start);
+
+    return stoi(numberStr);
+}
+
 string Shell::readCommand() {
-    setRawMode(true);  // Activar modo sin buffer
+    setRawMode(true);
     string command;
 
     printPrompt();
@@ -38,19 +78,17 @@ string Shell::readCommand() {
                 ch = getchar();
                 if (ch == 'A') {  // Flecha Arriba
                     string historyCommand = history.getCommand("up");
-                    if (!historyCommand.empty()) {
-                        command = historyCommand;
-                        printPrompt();
-                        cout << command;  // Borrar línea y mostrar historial
-                    }
+                    cout << "\r\033[K";  // Borrar línea completa
+                    printPrompt();
+                    cout << historyCommand;
+                    command = historyCommand;
                 }
                 else if (ch == 'B') {  // Flecha Abajo
                     string historyCommand = history.getCommand("down");
-                    if (!historyCommand.empty() || history.getOnShown() == history.getHistory().size()) {
-                        command = historyCommand;
-                        printPrompt();
-                        cout << command;
-                    }
+                    cout << "\r\033[K";
+                    printPrompt();
+                    cout << historyCommand;
+                    command = historyCommand;
                 }
             }
         }
@@ -279,6 +317,18 @@ void Shell::run() {
         if (command == "exit")
         {
             break;
+        }
+        if (command[0] == '!') {
+            int number;
+                try {
+                    number = extractNumberAfterExclamation(command);
+                } catch (const exception& e) {
+                    cout << "Selection command of command history invalid\n";
+                    continue;
+                }
+            command = history.getNCommand(number);
+            if (command.empty())
+                continue;
         }
 
         history.addCommand(command);
