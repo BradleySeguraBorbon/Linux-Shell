@@ -22,7 +22,9 @@ public:
     string getCommand(const string& direction);
     int getOnShown() const {return onShown;}
     void setOnShown(int onShown) {this->onShown = onShown;}
-    vector<Command> getHistory() const {return commands;};
+    vector<Command> getHistory() const {return commands;}
+    bool isBetweenCommandsRange(int number) const;
+    string getNCommand(int number) const;
 };
 
 #endif
