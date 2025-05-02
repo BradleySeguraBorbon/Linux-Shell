@@ -5,10 +5,10 @@ using namespace std;
 
 void History::addCommand(const string& command) {
     if (commands.size() == 10)
-        commands.erase(commands.begin());  // Eliminar el comando más antiguo
+        commands.erase(commands.begin()); 
 
     commands.push_back(Command(count++, command));
-    onShown = commands.size() + 1;  // Iniciar desde el más reciente
+    onShown = commands.size() + 1; 
 }
 
 void History::showHistory() const {

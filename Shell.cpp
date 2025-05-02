@@ -16,16 +16,16 @@ void setRawMode(bool enable) {
     struct termios t;
     tcgetattr(STDIN_FILENO, &t);
     if (enable) {
-        t.c_lflag &= ~(ICANON | ECHO);  // Modo sin buffer y sin eco
+        t.c_lflag &= ~(ICANON | ECHO); 
     } else {
         t.c_lflag |= (ICANON | ECHO);
     }
     tcsetattr(STDIN_FILENO, TCSANOW, &t);
 }
 
-// Función para capturar texto y flechas
+
 string Shell::readCommand() {
-    setRawMode(true);  // Activar modo sin buffer
+    setRawMode(true); 
     string command;
 
     printPrompt();
@@ -33,18 +33,18 @@ string Shell::readCommand() {
     while (true) {
         char ch = getchar();
 
-        if (ch == 27) {  // Tecla ESC (posible flecha)
-            if (getchar() == 91) {  // Verificar que es una secuencia ANSI
+        if (ch == 27) {  
+            if (getchar() == 91) {  
                 ch = getchar();
-                if (ch == 'A') {  // Flecha Arriba
+                if (ch == 'A') {  
                     string historyCommand = history.getCommand("up");
                     if (!historyCommand.empty()) {
                         command = historyCommand;
                         printPrompt();
-                        cout << command;  // Borrar línea y mostrar historial
+                        cout << command;  
                     }
                 }
-                else if (ch == 'B') {  // Flecha Abajo
+                else if (ch == 'B') { 
                     string historyCommand = history.getCommand("down");
                     if (!historyCommand.empty() || history.getOnShown() == history.getHistory().size()) {
                         command = historyCommand;
@@ -54,11 +54,11 @@ string Shell::readCommand() {
                 }
             }
         }
-        else if (ch == 10) {  // ENTER
+        else if (ch == 10) { 
             cout << endl;
             break;
         }
-        else if (ch == 127) {  // BACKSPACE
+        else if (ch == 127) { 
             if (!command.empty()) {
                 command.pop_back();
                 cout << "\b \b";
